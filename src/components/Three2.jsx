@@ -12,7 +12,7 @@ const Models = [
   // { title: 'CajaSeparador', url: './gltf/CajaSeparador.glb' },
   // { title: 'jamoneroMacondo2', url: './gltf/jamoneroMacondo2.glb' },
   // { title: 'jamoneroMacondo2', url: './gltf/jamoneroMacondo2.glb' },
-  { title: 'antorcha', url: './antorcha.glb' },
+  { title: 'antorcha1', url: './antorcha1.glb' },
 ]
 
 function Model({ url }) {
