@@ -1,47 +1,80 @@
-import { Suspense } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
-import { OrbitControls, Environment, useGLTF, Clone } from '@react-three/drei'
+import * as THREE from 'three'
+import { Suspense, useState, useRef, useEffect } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { Stats, OrbitControls, Environment, useGLTF, Clone, Html, ContactShadows } from '@react-three/drei'
 import { useControls } from 'leva'
 
 const Models = [
   // { title: 'Hammer', url: './models/hammer.glb' },
-  // { title: 'Drill', url: './models/drill.glb' },
-  // { title: 'Tape Measure', url: './models/tapeMeasure.glb' },
-  // { title: 'blender', url: './models/blender.gltf' },
-  // { title: 'blender2', url: './models/blender2.glb' },
-  { title: 'AMI', url: './ami.glb' },
+  // { title: 'cajaSeparadorRemesh', url: './gltf/cajaSeparadorRemesh.glb' },
+  // { title: 'cajaSeparadorRemesh2', url: './gltf/cajaSeparadorRemesh2.glb' },
+  // { title: 'troquel4e0067_glb', url: './gltf/troquel4e0067_glb.glb' },
+  // { title: 'CajaSeparador', url: './gltf/CajaSeparador.glb' },
+  // { title: 'jamoneroMacondo2', url: './gltf/jamoneroMacondo2.glb' },
+  // { title: 'jamoneroMacondo2', url: './gltf/jamoneroMacondo2.glb' },
+  { title: 'antorcha2', url: './antorcha2.glb' },
+  { title: 'antorcha1', url: './antorcha1.glb' },
 ]
 
-function Model({ url }) {
+function Model({ url, miEscala, miPosicion }) {
   const { scene } = useGLTF(url)
-  return <Clone object={scene} castShadow receiveShadow position={[0, -.3, 0]} scale={.4} />
-}
-
-export default function App() {
-  const { title } = useControls({
-    title: {
-      options: Models.map(({ title }) => title)
+  scene.traverse((node) => {
+    if (node.isMesh) {
+      node.material.roughness = 1
     }
   })
-
+  const group = useRef()
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime()
+    // group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, Math.cos(t / 4) / 20 + 0.25, 0.1)
+    // group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, Math.sin(t / 8) / 10, 0.1)
+    // group.current.rotation.z = THREE.MathUtils.lerp(group.current.rotation.z, Math.sin(t / 8) / 20, 0.1)
+    group.current.position.y = miPosicion
+    group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, (-2 + Math.sin(t)) / 90, 0.6)
+  })
   return (
-    <>
-      <Canvas camera={{ position: [0, .2, -0.3], near: 0.025 }}>
-        {/* <Environment files="./img/workshop_1k.hdr" background blur={.5} /> */}
-        {/* <pointLight position={[20, 20, 90]} intensity={5000} decay={2} distance={1} /> */}
-        <pointLight position={[20, 20, 0]} intensity={1000} decay={2} />
-        <pointLight position={[-20, 20, 0]} intensity={1000} decay={2} />
-        <ambientLight intensity={2} />
-        <Suspense>
-          <Model url={Models[Models.findIndex((m) => m.title === title)].url} />
-        </Suspense>
-        <OrbitControls autoRotate />
-        {/* <Stats /> */}
-      </Canvas>
-      {/* <span id="info">Tienes seleccionada la caja {title} </span> */}
-    </>
+    <group ref={group} dispose={null} position={[0, 2, 0]} scale={miEscala}>
+      <Clone object={scene} castShadow receiveShadow />
+    </group>
   )
 }
 
-useGLTF.preload(Models.map(({ url }) => url))
+function Fallback() {
+  return <Html><div>Loading...</div></Html>
+}
 
+export default function EstucheConAsas({ david, escala, posicion }) {
+  const [title, setTitle] = useState(david)
+
+  const { modelo } = useControls('Model', {
+    modelo: {
+      value: david, // valor inicial
+      options: Models.map(({ title }) => title), // opciones para seleccionar
+    },
+  })
+
+  useEffect(() => {
+    setTitle(modelo) // Usa el valor de modelo devuelto por useControls
+  }, [modelo])
+
+  const modelIndex = Models.findIndex((m) => m.title === title)
+  const modelUrl = modelIndex !== -1 ? Models[modelIndex].url : null
+
+  return (
+    <>
+      <Canvas camera={{ position: [0, .4, -0.6], near: .01, fov: 50 }}>
+        {/* <pointLight position={[100, 100, 0]} intensity={55555} decay={2} />
+        <pointLight position={[-100, 100, 0]} intensity={55555} decay={2} />
+        <pointLight position={[-100, 100, 100]} intensity={11111} decay={2} />
+        <pointLight position={[100, -100, -100]} intensity={11111} decay={2} />
+        <pointLight position={[100, -100, 100]} intensity={11111} decay={2} /> */}
+        <ambientLight intensity={4} />
+        <Suspense fallback={<Fallback />}>
+          {modelUrl && <Model url={modelUrl} miEscala={escala} miPosicion={posicion} />}
+        </Suspense>
+        <OrbitControls autoRotate autoRotateSpeed={.6} />
+        <ContactShadows resolution={512} scale={30} position={[0, -0.2, 0.0]} blur={.1} opacity={.5} far={10} color='#8a6246' />
+      </Canvas>
+    </>
+  )
+}

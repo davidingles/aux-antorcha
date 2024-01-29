@@ -1,13 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import Three2 from '../components/Three2.jsx'
+import Three2 from '../components/Three.jsx'
 ---
 
 <Layout title='Welcome to Astro.'>
 	<main class='h-screen flex justify-center bg-slate-500'>
 		<Three2
 			client:load
-			david='antorcha1'
+			david='antorcha2'
+			escala={0.6}
+			posicion={-0.3}
 		/>
 	</main>
 </Layout>
