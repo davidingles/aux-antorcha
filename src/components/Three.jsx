@@ -20,6 +20,7 @@ function Model({ url, miEscala, miPosicion }) {
   const { scene } = useGLTF(url)
   scene.traverse((node) => {
     if (node.isMesh) {
+      node.material.transparent = true
       node.material.roughness = 1
     }
   })
